@@ -1,0 +1,12 @@
+﻿{
+    "ColoreR":  80,
+    "ColoreG":  200,
+    "ColoreB":  255,
+    "ProfonditaBagliore":  7,
+    "SpessoreLinea":  0.1,
+    "PercentualeStaccoOrizzontale":  0.05,
+    "PercentualeStaccoVerticale":  0.36,
+    "RaggioAngoli":  10,
+    "PuntoBiancoSchede":  110,
+    "PuntoBiancoToolbar":  110
+}
