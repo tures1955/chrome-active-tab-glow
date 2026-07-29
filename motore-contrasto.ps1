@@ -541,7 +541,6 @@ $timer.Add_Tick({
             } else {
                 # La scheda attiva stessa non e' visibile (qualcosa, es.
                 # Claude Code, e' stato trascinato sopra): spegni tutto.
-                if ($traccia) { "  -> NASCONDO (scheda nulla o coperta)" | Out-File -Append -FilePath "$env:TEMP\debug-bagliore.log" }
                 $bagliore.NascondiSeVisibile()
             }
         } else {
