@@ -205,13 +205,25 @@ public static class Contrasto {
 
             int relX = areaSchermo.X - finestra.Left;
             int relY = areaSchermo.Y - finestra.Top;
-            var ritaglio = new Rectangle(
-                Math.Max(0, relX), Math.Max(0, relY),
-                Math.Max(1, Math.Min(areaSchermo.Width, larghezzaFinestra - relX)),
-                Math.Max(1, Math.Min(areaSchermo.Height, altezzaFinestra - relY)));
+            var vogliamo = new Rectangle(relX, relY, Math.Max(1, areaSchermo.Width), Math.Max(1, areaSchermo.Height));
+            var confiniVeri = new Rectangle(0, 0, larghezzaFinestra, altezzaFinestra);
+            var ritaglio = Rectangle.Intersect(vogliamo, confiniVeri);
+            if (ritaglio.Width <= 0 || ritaglio.Height <= 0) {
+                return new Bitmap(Math.Max(1, areaSchermo.Width), Math.Max(1, areaSchermo.Height), PixelFormat.Format32bppArgb);
+            }
 
             return completa.Clone(ritaglio, completa.PixelFormat);
         }
+    }
+
+    // Se il rettangolo richiesto sconfina anche solo un po' fuori dai
+    // bordi veri dell'immagine sorgente (puo' succedere se Chrome si sta
+    // ancora "assestando", ad esempio appena dopo l'accensione del PC),
+    // GDI+ non si limita a ritagliare quello che c'e': lancia un errore
+    // "memoria insufficiente" fuorviante. Meglio limitarsi sempre alla
+    // zona che esiste davvero.
+    private static Rectangle RettangoloEntroConfini(Rectangle richiesto, int larghezzaMax, int altezzaMax) {
+        return Rectangle.Intersect(richiesto, new Rectangle(0, 0, larghezzaMax, altezzaMax));
     }
 
     // Schiarisce una porzione di "originale" (area sorgente, in pixel
@@ -239,7 +251,10 @@ public static class Contrasto {
     // e' morbida (non un taglio netto) per non creare un bordo brutto
     // intorno alle lettere.
     public static void SchiarisciSoloChiari(Graphics destinazione, Bitmap originale, Rectangle areaSorgente, Rectangle areaDestinazione, int puntoBianco, int sogliaSfondo) {
-        using (var ritaglio = originale.Clone(areaSorgente, originale.PixelFormat)) {
+        var areaValida = RettangoloEntroConfini(areaSorgente, originale.Width, originale.Height);
+        if (areaValida.Width <= 0 || areaValida.Height <= 0) return;
+
+        using (var ritaglio = originale.Clone(areaValida, originale.PixelFormat)) {
             var dati = ritaglio.LockBits(new Rectangle(0, 0, ritaglio.Width, ritaglio.Height), ImageLockMode.ReadWrite, PixelFormat.Format32bppArgb);
             try {
                 int byteCount = Math.Abs(dati.Stride) * ritaglio.Height;
