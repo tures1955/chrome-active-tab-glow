@@ -521,6 +521,19 @@ $timer.Add_Tick({
         # non esiste piu' o e' minimizzata.
         $hwndDaUsare = $script:hwndChromeUltima
 
+        # Se non abbiamo (piu') una finestra Chrome valida -- es. il motore
+        # e' partito PRIMA di Chrome all'accensione del PC, e da allora non
+        # hai mai dato il focus vero a Chrome col mouse -- ricerchiamo da
+        # capo una finestra Chrome visibile, ad ogni ciclo, finche' non la
+        # troviamo. Cosi' non serve nessuna interazione manuale.
+        if ($hwndDaUsare -eq [IntPtr]::Zero -or -not [Win32]::IsWindow($hwndDaUsare) -or [Win32]::IsIconic($hwndDaUsare)) {
+            $trovata = [Win32]::TrovaChromeVisibile($classeFinestra, $nomeProcesso)
+            if ($trovata -ne [IntPtr]::Zero) {
+                $script:hwndChromeUltima = $trovata
+                $hwndDaUsare = $trovata
+            }
+        }
+
         if ($hwndDaUsare -ne [IntPtr]::Zero -and [Win32]::IsWindow($hwndDaUsare) -and -not [Win32]::IsIconic($hwndDaUsare)) {
             $scheda = [ElementiChrome]::SchedaAttiva($hwndDaUsare)
             if ($scheda -and [Win32]::ChromeEDavveroVisibileInTutto([int]$scheda.X, [int]$scheda.Y, [int]$scheda.Width, [int]$scheda.Height, $nomeProcesso)) {
